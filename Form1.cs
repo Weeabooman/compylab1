@@ -25,6 +25,7 @@ namespace compy
         private readonly string punctuationPattern = @"[\(\)\{\}\[\];,]";
         private readonly string invalidCharacterPattern = @"[^a-zA-Z0-9\s\$\(\)\{\}\[\];,+\-*/=<>!&|']";  // Все недопустимые символы
 
+
         public Form1()
         {
             InitializeComponent();
