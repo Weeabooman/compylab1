@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,6 +17,13 @@ namespace compy
 
         private bool isTextChanged = false;
         private string currentFilePath = string.Empty; //переменная для хранения пути к файлу
+        private readonly string keywordPattern = @"\b(function|return|if|else|for|while|break|continue|class|public|private|protected|echo|require)\b";
+        private readonly string identifierPattern = @"\$\w+";
+        private readonly string numberPattern = @"\b\d+(\.\d+)?\b";
+        private readonly string operatorPattern = @"[+\-*/=<>!&|]+";
+        private readonly string stringPattern = @"'([^']*)'|""([^""]*)""";
+        private readonly string punctuationPattern = @"[\(\)\{\}\[\];,]";
+        private readonly string invalidCharacterPattern = @"[^a-zA-Z0-9\s\$\(\)\{\}\[\];,+\-*/=<>!&|']";  // Все недопустимые символы
 
         public Form1()
         {
@@ -192,6 +200,80 @@ namespace compy
         private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
             isTextChanged = true;
+        }
+
+        private void пускToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AnalyzeText();
+        }
+
+        private void AppendResult(string text)
+        {
+            richTextBox2.AppendText(text + "\n");
+        }
+        private void AnalyzeText()
+        {
+            string text = richTextBox1.Text;
+
+            // Очистка результатов анализа
+            richTextBox2.Clear();
+
+            // Поиск недопустимых символов
+            MatchCollection invalidCharacters = Regex.Matches(text, invalidCharacterPattern);
+
+            // Если есть недопустимые символы, выводим ошибку и не показываем результаты
+            if (invalidCharacters.Count > 0)
+            {
+                // Создадим строку с ошибками
+                string invalidChars = string.Join(", ", invalidCharacters.Cast<Match>().Select(m => m.Value));
+                MessageBox.Show($"Обнаружены недопустимые символы: {invalidChars}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;  // Возвращаемся, не продолжая вывод лексем
+            }
+
+            // Поиск лексем
+            MatchCollection keywords = Regex.Matches(text, keywordPattern);
+            MatchCollection identifiers = Regex.Matches(text, identifierPattern);
+            MatchCollection numbers = Regex.Matches(text, numberPattern);
+            MatchCollection operators = Regex.Matches(text, operatorPattern);
+            MatchCollection strings = Regex.Matches(text, stringPattern);
+            MatchCollection punctuation = Regex.Matches(text, punctuationPattern);
+
+            // Вывод лексем в resultsRichTextBox
+            AppendResult("Ключевые слова:");
+            foreach (Match match in keywords)
+            {
+                AppendResult(match.Value);
+            }
+
+            AppendResult("\nИдентификаторы:");
+            foreach (Match match in identifiers)
+            {
+                AppendResult(match.Value);
+            }
+
+            AppendResult("\nЧисла:");
+            foreach (Match match in numbers)
+            {
+                AppendResult(match.Value);
+            }
+
+            AppendResult("\nОператоры:");
+            foreach (Match match in operators)
+            {
+                AppendResult(match.Value);
+            }
+
+            AppendResult("\nСтроки:");
+            foreach (Match match in strings)
+            {
+                AppendResult(match.Value);
+            }
+
+            AppendResult("\nПунктуация:");
+            foreach (Match match in punctuation)
+            {
+                AppendResult(match.Value);
+            }
         }
     }
 }
