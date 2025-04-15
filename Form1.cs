@@ -20,11 +20,22 @@ namespace compy
         public Form1()
         {
             InitializeComponent();
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Проверка, нужно ли сохранить изменения
+            if (!PromptToSaveChanges())
+            {
+                // Если пользователь выбрал "Отмена", отменяем закрытие окна
+                e.Cancel = true;
+            }
         }
 
         private void создатьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -152,8 +163,6 @@ namespace compy
                 richTextBox2.Text = richTextBox1.Text.Replace("\r\n", Environment.NewLine).Replace("\n", Environment.NewLine);
             }
         }
-        // ключевые слова
-        private readonly string[] keywords = { "int", "string", "if", "else", "while", "for", "return", "void", "class" }; 
 
         private bool PromptToSaveChanges()
         {
@@ -176,8 +185,13 @@ namespace compy
                 return true;
             }
 
-            // если Cancel
+            // Если Cancel
             return false;
+        }
+
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        {
+            isTextChanged = true;
         }
     }
 }
